@@ -159,13 +159,22 @@ extension CGContext
 
     public func drawText(_ text: String, at point: CGPoint, align: TextAlignment, anchor: CGPoint = CGPoint(x: 0.5, y: 0.5), angleRadians: CGFloat = 0.0, attributes: [NSAttributedString.Key : Any]?)
     {
-        let drawPoint = getDrawPoint(text: text, point: point, align: align, attributes: attributes)
+        var drawPoint = getDrawPoint(text: text, point: point, align: align, attributes: attributes)
         
         if (angleRadians == 0.0)
         {
             NSUIGraphicsPushContext(self)
             
-            (text as NSString).draw(at: drawPoint, withAttributes: attributes)
+            if currentRTL() {
+                saveGState()
+                scaleBy(x: -1, y: 1)
+                
+                drawPoint.x = -drawPoint.x
+                (text as NSString).draw(at: drawPoint, withAttributes: attributes)
+                restoreGState()
+            } else {
+                (text as NSString).draw(at: drawPoint, withAttributes: attributes)
+            }
             
             NSUIGraphicsPopContext()
         }
@@ -204,7 +213,15 @@ extension CGContext
             translateBy(x: translate.x, y: translate.y)
             rotate(by: angleRadians)
 
-            (text as NSString).draw(at: drawOffset, withAttributes: attributes)
+            if currentRTL() {
+                saveGState()
+                scaleBy(x: -1, y: 1)
+                drawOffset.x = -drawOffset.x
+                (text as NSString).draw(at: drawOffset, withAttributes: attributes)
+                restoreGState()
+            } else {
+                (text as NSString).draw(at: drawOffset, withAttributes: attributes)
+            }
 
             restoreGState()
         }
@@ -221,7 +238,17 @@ extension CGContext
             drawOffset.x += point.x
             drawOffset.y += point.y
 
-            (text as NSString).draw(at: drawOffset, withAttributes: attributes)
+            if currentRTL() {
+                saveGState()
+                scaleBy(x: -1, y: 1)
+                
+                drawOffset.x = -drawOffset.x
+                (text as NSString).draw(at: drawOffset, withAttributes: attributes)
+                restoreGState()
+            } else {
+                (text as NSString).draw(at: drawOffset, withAttributes: attributes)
+            }
+            
         }
 
         NSUIGraphicsPopContext()
@@ -231,14 +258,20 @@ extension CGContext
     {
         var point = point
         
-        if align == .center
-        {
-            point.x -= text.size(withAttributes: attributes).width / 2.0
+        if currentRTL() {
+
+        } else {
+            if align == .center
+            {
+                point.x -= text.size(withAttributes: attributes).width / 2.0
+            }
+            else if align == .right
+            {
+                point.x -= text.size(withAttributes: attributes).width
+            }
         }
-        else if align == .right
-        {
-            point.x -= text.size(withAttributes: attributes).width
-        }
+        
+        
         return point
     }
     
@@ -269,7 +302,17 @@ extension CGContext
             translateBy(x: translate.x, y: translate.y)
             rotate(by: angleRadians)
 
-            (text as NSString).draw(with: rect, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
+            
+            if currentRTL() {
+//                saveGState()
+                scaleBy(x: -1, y: 1)
+                rect.origin.x = -rect.origin.x
+                (text as NSString).draw(with: rect, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
+//                restoreGState()
+            } else {
+                (text as NSString).draw(with: rect, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
+            }
+            
 
             restoreGState()
         }
@@ -283,8 +326,16 @@ extension CGContext
 
             rect.origin.x += point.x
             rect.origin.y += point.y
-
-            (text as NSString).draw(with: rect, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
+            if currentRTL() {
+                saveGState()
+                scaleBy(x: -1, y: 1)
+                rect.origin.x = -rect.origin.x
+                (text as NSString).draw(with: rect, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
+                restoreGState()
+            } else {
+                (text as NSString).draw(with: rect, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
+            }
+            
         }
 
         NSUIGraphicsPopContext()
@@ -293,6 +344,7 @@ extension CGContext
     func drawMultilineText(_ text: String, at point: CGPoint, constrainedTo size: CGSize, anchor: CGPoint, angleRadians: CGFloat, attributes: [NSAttributedString.Key : Any]?)
     {
         let rect = text.boundingRect(with: size, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
+        
         drawMultilineText(text, at: point, constrainedTo: size, anchor: anchor, knownTextSize: rect.size, angleRadians: angleRadians, attributes: attributes)
     }
 }

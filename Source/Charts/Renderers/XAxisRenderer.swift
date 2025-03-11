@@ -301,6 +301,7 @@ open class XAxisRenderer: NSObject, AxisRenderer
                 }
             }
             
+            
             drawLabel(context: context,
                       formattedLabel: label,
                       x: position.x,
@@ -309,6 +310,7 @@ open class XAxisRenderer: NSObject, AxisRenderer
                       constrainedTo: labelMaxSize,
                       anchor: anchor,
                       angleRadians: labelRotationAngleRadians)
+            
         }
     }
     
@@ -416,14 +418,29 @@ open class XAxisRenderer: NSObject, AxisRenderer
             position.x = CGFloat(l.limit)
             position.y = 0.0
             position = position.applying(trans)
+
+            if currentRTL() {
+                context.saveGState()
+                context.scaleBy(x: -1, y: 1)
+                position.x = -position.x
+                renderLimitLineLine(context: context, limitLine: l, position: position)
+                renderLimitLineLabel(context: context, limitLine: l, position: position, yOffset: 2.0 + l.yOffset)
+                context.restoreGState()
+            } else {
+                
+                renderLimitLineLine(context: context, limitLine: l, position: position)
+                renderLimitLineLabel(context: context, limitLine: l, position: position, yOffset: 2.0 + l.yOffset)
+            }
             
-            renderLimitLineLine(context: context, limitLine: l, position: position)
-            renderLimitLineLabel(context: context, limitLine: l, position: position, yOffset: 2.0 + l.yOffset)
+            
+            
         }
     }
     
     @objc open func renderLimitLineLine(context: CGContext, limitLine: ChartLimitLine, position: CGPoint)
     {
+        
+        
         context.beginPath()
         context.move(to: CGPoint(x: position.x, y: viewPortHandler.contentTop))
         context.addLine(to: CGPoint(x: position.x, y: viewPortHandler.contentBottom))

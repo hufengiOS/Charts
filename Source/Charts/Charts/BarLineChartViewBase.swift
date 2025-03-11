@@ -18,6 +18,15 @@ import UIKit
 import AppKit
 #endif
 
+
+func currentRTL() -> Bool {
+#if DEBUG
+    return true
+#endif
+    return UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
+}
+
+
 /// Base-class of LineChart, BarChart, ScatterChart and CandleStickChart.
 open class BarLineChartViewBase: ChartViewBase, BarLineScatterCandleBubbleChartDataProvider, NSUIGestureRecognizerDelegate
 {

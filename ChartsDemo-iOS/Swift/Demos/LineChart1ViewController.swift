@@ -9,6 +9,33 @@
 import UIKit
 import DGCharts
 
+func ISRTL() -> Bool {
+#if DEBUG
+    return true
+#endif
+    let key = Bundle.main.preferredLocalizations.first
+    if let keyValue = key {
+        return keyValue.hasPrefix("ar")
+    }
+    return false
+}
+
+extension UIView {
+    func toRTL() {
+        if ISRTL() {
+            let trans = CGAffineTransform.identity.scaledBy(x: -1.0, y: 1.0)
+            self.transform = trans
+            self.backgroundColor = UIColor.clear
+            
+            for subView in self.subviews {
+                if subView is UILabel {
+                    subView.transform = trans
+                }
+            }
+        }
+    }
+}
+
 class LineChart1ViewController: DemoBaseViewController {
 
     @IBOutlet var chartView: LineChartView!
@@ -45,7 +72,7 @@ class LineChart1ViewController: DemoBaseViewController {
         chartView.dragEnabled = true
         chartView.setScaleEnabled(true)
         chartView.pinchZoomEnabled = true
-
+        
         // x-axis limit line
         let llXAxis = ChartLimitLine(limit: 10, label: "Index 10")
         llXAxis.lineWidth = 4
@@ -55,7 +82,8 @@ class LineChart1ViewController: DemoBaseViewController {
 
         chartView.xAxis.gridLineDashLengths = [10, 10]
         chartView.xAxis.gridLineDashPhase = 0
-
+        chartView.xAxis.granularity = 1
+        
         let ll1 = ChartLimitLine(limit: 150, label: "Upper Limit")
         ll1.lineWidth = 4
         ll1.lineDashLengths = [5, 5]
@@ -96,7 +124,8 @@ class LineChart1ViewController: DemoBaseViewController {
         sliderY.value = 100
         slidersValueChanged(nil)
 
-        chartView.animate(xAxisDuration: 2.5)
+        self.chartView.toRTL()
+//        chartView.animate(xAxisDuration: 2.5)
     }
 
     override func updateChartData() {
@@ -131,6 +160,8 @@ class LineChart1ViewController: DemoBaseViewController {
         let data = LineChartData(dataSet: set1)
 
         chartView.data = data
+        
+        chartView.setVisibleXRange(minXRange: 7, maxXRange: 7)
     }
 
     private func setup(_ dataSet: LineChartDataSet) {
