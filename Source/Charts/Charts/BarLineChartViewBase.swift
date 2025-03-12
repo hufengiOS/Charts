@@ -20,9 +20,6 @@ import AppKit
 
 
 func currentRTL() -> Bool {
-#if DEBUG
-    return true
-#endif
     return UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
 }
 
